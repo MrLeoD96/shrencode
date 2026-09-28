@@ -20,6 +20,8 @@ jobs:
           path: dist/*.zip
 
   pypi:
+    # PyPI uploads can't be replaced, so publish only once the Windows build has worked.
+    needs: windows
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
