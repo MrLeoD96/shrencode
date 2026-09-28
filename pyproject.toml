@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "shrencode"
+dynamic = ["version"]
+description = "Re-encode video into small viewing copies, adapting to each file"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+keywords = ["ffmpeg", "x265", "svt-av1", "vmaf", "archive", "video"]
+classifiers = [
+    "Environment :: Console",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Video :: Conversion",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/MrLeoD96/shrencode"
+Changelog = "https://github.com/MrLeoD96/shrencode/blob/main/CHANGELOG.md"
+
+[project.scripts]
+shrencode = "shrencode.cli:main"
+
+[project.gui-scripts]
+shrencodew = "shrencode.cli:main"
+
+[tool.hatch.version]
+path = "src/shrencode/__init__.py"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/shrencode/menu.py" = ["E501"]  # embedded SVG path data
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

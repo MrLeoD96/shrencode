@@ -1,0 +1,26 @@
+{
+    "version": "0.1.0",
+    "description": "Re-encode video into small viewing copies, adapting to each file.",
+    "homepage": "https://github.com/MrLeoD96/shrencode",
+    "license": "MIT",
+    "depends": "main/ffmpeg",
+    "suggest": {
+        "video-compare": "extras/video-compare"
+    },
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/MrLeoD96/shrencode/releases/download/v0.1.0/shrencode-0.1.0-windows-x64.zip",
+            "hash": "REPLACE_WITH_SHA256"
+        }
+    },
+    "bin": "shrencode.exe",
+    "notes": "Run 'shrencode menu install' from an administrator terminal to add the Nilesoft Shell menu.",
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/MrLeoD96/shrencode/releases/download/v$version/shrencode-$version-windows-x64.zip"
+            }
+        }
+    }
+}
