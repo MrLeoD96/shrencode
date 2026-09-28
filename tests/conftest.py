@@ -33,8 +33,6 @@ def clips(tmp_path_factory):
                 "6M",
                 "-flags",
                 "+ilme+ildct",
-                "-top",
-                "1",
                 "-c:a",
                 "mp2",
             ],
