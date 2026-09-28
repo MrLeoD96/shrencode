@@ -1,14 +1,14 @@
-# shrencode
+# <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/MrLeoD96/shrencode/main/assets/logo-dark.svg"><img src="https://raw.githubusercontent.com/MrLeoD96/shrencode/main/assets/logo.svg" alt="" height="28"></picture> shrencode
 
 [![PyPI](https://img.shields.io/pypi/v/shrencode)](https://pypi.org/project/shrencode/)
 [![Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FMrLeoD96%2Fshrencode%2Fmain%2Fpyproject.toml)](https://www.python.org/downloads/)
 [![CI](https://github.com/MrLeoD96/shrencode/actions/workflows/ci.yml/badge.svg)](https://github.com/MrLeoD96/shrencode/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/MrLeoD96/shrencode)](LICENSE)
+[![License](https://img.shields.io/github/license/MrLeoD96/shrencode)](https://github.com/MrLeoD96/shrencode/blob/main/LICENSE)
 
-shrencode is a tool to easily reencode large/old video files and shrink them down
-into a smaller file for storage without a quality compromise. It achieves this by first
-intelligently analysing, then adapting the encode to the codec, resolution, grain,
-interlacing, HDR metadata and audio layout of the original file.
+shrencode is a tool to easily re-encode large or old video files and shrink them down
+into a smaller file for storage without visible quality loss. It achieves this by first
+analysing the original file, then adapting the encode to its codec, resolution, grain,
+interlacing, HDR metadata and audio layout.
 
 ```
 shrencode encode interview.mov
@@ -20,10 +20,31 @@ shrencode encode interview.mov
       done  2.10 GB, 95.6% smaller, 3:12:04
 ```
 
+<!-- TODO: replace the output above with a screenshot of the CLI -->
+
+The original is never modified. The encode is written next to it as `interview.x265.mkv`.
+
 Uses _ffmpeg_ with _x265_ or _SVT-AV1_.
 Can use [video-compare](https://github.com/pixop/video-compare) to help you visually check the quality of your encode compared
 to the original.
 If you use [Nilesoft Shell](https://nilesoft.org), this can be added as a right-click menu item.
+
+### Why not HandBrake?
+
+HandBrake applies the same preset to every file you give it. shrencode looks at each file
+first: it leaves sources that are already efficiently compressed alone, picks the quality
+by resolution, measures grain and only deinterlaces what is actually interlaced. It doesn't
+crop by default, and every encode is checked before it's kept. If you want to fine-tune a
+single encode by hand, HandBrake is still the better tool.
+
+## Requirements
+
+* ffmpeg with libx265. SVT-AV1 needs libsvtav1, and `--min-vmaf` needs libvmaf. On Windows
+  the full builds from gyan.dev have all three: `winget install Gyan.FFmpeg` or
+  `scoop install ffmpeg`.
+* Python 3.11 or newer, unless you use the standalone zip.
+* Optionally [video-compare](https://github.com/pixop/video-compare) for `compare`, and
+  [Nilesoft Shell](https://nilesoft.org) for the right-click menu.
 
 ## Install
 
@@ -31,11 +52,8 @@ If you use [Nilesoft Shell](https://nilesoft.org), this can be added as a right-
 uv tool install shrencode
 ```
 
-`pipx install shrencode` works too, as does the standalone zip on the releases page.
-
-shrencode needs an ffmpeg build with libx265. SVT-AV1 needs libsvtav1, and `--min-vmaf`
-needs libvmaf. On Windows the full builds from gyan.dev have all three:
-`winget install Gyan.FFmpeg` or `scoop install ffmpeg`.
+`pipx install shrencode` works too, as does the standalone zip on the
+[releases page](https://github.com/MrLeoD96/shrencode/releases). Upgrade with `uv tool upgrade shrencode`.
 
 ## Commands
 
@@ -47,7 +65,7 @@ shrencode encode [OPTIONS] INPUT...
 
 Inputs can be files, folders or wildcards; `-r` includes subfolders. Per file:
 
-* Editing codecs and old delivery codecs are encoded. H.264, HEVC and AV1 sources are only
+* Editing codecs and old delivery codecs are encoded. H.264, HEVC, AV1 and VP9 sources are only
   encoded when their bitrate is high, measured in bits per pixel; `--encode-all` overrides this.
 * CRF steps up with resolution, from 18 for SD to 23 for 6K with x265 at `--quality balanced`.
 * Grain is measured and sets x265's psy options, or SVT-AV1 film grain synthesis.
@@ -119,6 +137,50 @@ messages stay on stderr.
 The exit code is 1 if any file failed. Failed encodes keep their ffmpeg log in
 `%LOCALAPPDATA%\shrencode\logs`.
 
+## Troubleshooting
+
+**A file was skipped.** H.264, HEVC, AV1 and VP9 sources that are already efficiently
+compressed are left alone. `-v` shows the bits-per-pixel figure behind the decision, and
+`--encode-all` encodes them anyway.
+
+**An encode was discarded as `not-smaller`.** It came out above 90% of the source size, so
+keeping it would save little. Try `--quality compact` or `-e svt-av1`, or raise the limit
+with `--max-encoded-percent`.
+
+**The right-click menu doesn't show up.** Hold Ctrl and right-click the desktop to reload
+Nilesoft Shell. If shrencode was moved or reinstalled somewhere else, run
+`shrencode menu install` again so the menu points at the new location.
+
+**Upgrading fails with "Access is denied".** A shrencode window is still open, usually one
+from the right-click menu waiting for a key press, or an encode is still running. Close it
+and try again.
+
+**An encode failed.** The ffmpeg log is kept in `%LOCALAPPDATA%\shrencode\logs`, or
+`~/.local/state/shrencode/logs` on Linux and macOS.
+
+## Development
+
+```
+git clone https://github.com/MrLeoD96/shrencode
+cd shrencode
+uv sync --group dev
+uv run pytest
+uv run ruff check src tests
+uv run ruff format --check src tests
+```
+
+The end-to-end tests need ffmpeg on PATH and are skipped without it. Bug reports and pull
+requests are welcome.
+
+## Credits
+
+The actual encoding is done by [FFmpeg](https://ffmpeg.org), [x265](https://www.videolan.org/developers/x265.html),
+[SVT-AV1](https://gitlab.com/AOMediaCodec/SVT-AV1) and [VMAF](https://github.com/Netflix/vmaf).
+Side-by-side checks use [video-compare](https://github.com/pixop/video-compare), and the
+right-click menu uses [Nilesoft Shell](https://nilesoft.org). The keyframe interval and VMAF
+sampling follow [ab-av1](https://github.com/alexheretic/ab-av1), and the quality levels
+started from [HandBrake](https://handbrake.fr)'s presets.
+
 ## License
 
-MIT
+[MIT](https://github.com/MrLeoD96/shrencode/blob/main/LICENSE)
